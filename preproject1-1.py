@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-__author__ = 'koo'
 
+from __future__ import print_function
+
+__author__ = 'koo'
 
 class Automata:
     def __init__(self, name):
@@ -17,11 +19,11 @@ class Automata:
         assert isinstance(voca, list)
         self.voca = voca
 
-    def set_state(self, state_name):
+    def add_state(self, state_name):
         state = self.State(state_name)
         self.states[state_name] = state
 
-    def set_final_states(self, state):
+    def add_final_state(self, state):
         self.final_states[state.get_name()] = state
 
     def set_init_state(self, state):
@@ -37,21 +39,22 @@ class Automata:
         else:
             False
 
-    def get_states(self):
+    def get_all_states(self):
         return self.states.values()
 
     def get_voca(self):
         return self.voca
 
-    def show_states(self):
-        for state in self.states.values():
-            print(state.get_name())
+    def show_all_states(self):
+        for state in sorted(self.states.values()):
+            print(state.get_name(), end=' ')
+        print("")
 
     def show_voca(self):
         print(self.voca)
 
     def show_init_state(self):
-        print self.init_state
+        print(self.init_state)
 
     def show_final_states(self):
         for state in self.final_states.values():
@@ -84,6 +87,7 @@ class Automata:
             # add check input and next have proper type.
             self.trans_func.append([input, next])
 
+
         def trans(self, input):
             for func in self.trans_func:
                 if func[0] == input:
@@ -108,39 +112,45 @@ def make_dfa():
     state_num = input("How many states? ")
 
     for i in range(state_num):
-        automata.set_state("q%d" % i)
+        automata.add_state("q%d" % i)
 
-    states = automata.get_states()
+    states = automata.get_all_states()
     voca = automata.get_voca()
 
     print("setting state transition function...")
 
-    for state in states:
+    for state in sorted(states):
         for input_symbol in voca:
-            success = False
-            while not success:
+            next = False
+            while not next:
                 next = raw_input("delta(%s, %s) -> " % (state.get_name(), input_symbol))
-                success = state.set_trans_func(input_symbol, automata.get_state(next))
-                if not success:
+                next = automata.get_state(next)
+                if next:
+                    success = state.set_trans_func(input_symbol, next)
+                else:
                     print("State doesn't exist. Please try again.")
 
 
     init_state = raw_input("initial state? ")
-    final_state = raw_input("final state? ")
+    final_states = raw_input("final states? (seperated by space) ")
+    final_states = final_states.split()
 
     automata.set_init_state(automata.get_state(init_state))
-    automata.set_final_states(automata.get_state(final_state))
+    for state in final_states:
+        automata.add_final_state(automata.get_state(state))
 
-    automata.show_states()
+    automata.show_all_states()
     automata.show_voca()
 
-    input_string = raw_input("input string? ")
+    while True:
+
+        input_string = raw_input("input string? ")
 
 
-    if automata.is_acceptable(input_string):
-        print("string accepted.")
-    else:
-        print("string not accepted.")
+        if automata.is_acceptable(input_string):
+            print("string accepted.")
+        else:
+            print("string not accepted.")
 
 
 
