@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 __author__ = 'koo'
 
 
@@ -7,10 +6,10 @@ class Automata:
     def __init__(self, name):
         self.name = name
         self.states = {}
-        self.final_states = {}
         self.voca = []
         self.init_state = None
-
+        self.final_states = {}
+        
     def __str__(self):
         return self.name
 
@@ -31,8 +30,8 @@ class Automata:
     def get_init_state(self):
         return self.init_state
 
+    # get State object by state name
     def get_state(self, state_name):
-        #assert state_name in self.states.keys()
         if state_name in self.states.keys():
             return self.states[state_name]
         else:
@@ -50,6 +49,13 @@ class Automata:
 
     def show_voca(self):
         print(self.voca)
+
+    def show_init_state(self):
+        print self.init_state
+
+    def show_final_states(self):
+        for state in self.final_states.values():
+            print(state.get_name())
 
 
     # check if input string is acceptable.
