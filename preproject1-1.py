@@ -161,7 +161,6 @@ def save_automata(automata):
             ET.SubElement(func, "next").text = pair[1].get_name()
 
     indent(root)
-    ET.dump(root)
 
     ET.ElementTree(root).write(filename)
 
@@ -204,30 +203,27 @@ def load_automata(file):
 
     return automata
 
-
-
-
-def make_dfa():
-
-    print("Make a new DFA.")
+# make and save a new automata
+def make_automata():
+    print("Make a new automata.\n")
     dfa_name = raw_input("DFA name? ")
 
     automata = Automata(dfa_name)
 
-    voca = raw_input("voca? (seperated by space) ")
+    voca = raw_input("vocabulary? (seperated by space) ")
     voca = voca.split()
 
     automata.set_voca(voca)
 
-    state_num = input("How many states? ")
+    state_num = raw_input("How many states? ")
 
-    for i in range(state_num):
+    for i in range(int(state_num)):
         automata.add_state("q%d" % i)
 
     states = automata.get_all_states()
     voca = automata.get_voca()
 
-    print("setting state transition function...")
+    print("setting state transition function...\n")
 
     for state in sorted(states):
         for input_symbol in voca:
@@ -249,42 +245,46 @@ def make_dfa():
     for state in final_states:
         automata.add_final_state(automata.get_state(state))
 
-    automata.show_all_states()
-    automata.show_voca()
-
     save_automata(automata)
 
-    automata_temp = load_automata("hw1")
-    print(automata_temp.get_name())
+    return automata
 
+def accept_test(automata):
     while True:
-
         input_string = raw_input("input string? ")
 
-
-        if automata_temp.is_acceptable(input_string):
+        if automata.is_acceptable(input_string):
             print("string accepted.")
         else:
             print("string not accepted.")
 
 
-#make_dfa()
-
-automata_temp = load_automata("hw1")
-print(automata_temp.get_name())
-print(automata_temp.get_init_state().get_name())
-
-automata_temp.show_voca()
-automata_temp.show_all_states()
-automata_temp.show_final_states()
-automata_temp.show_init_state()
-
-while True:
-
-    input_string = raw_input("input string? ")
 
 
-    if automata_temp.is_acceptable(input_string):
-        print("string accepted.")
+
+print ("""
+2015 Fall CS322 project. Developed by YP Koo.
+
+Welcome to Automata world!
+""")
+
+success = False
+
+while not success:
+    input = raw_input("Do you want to load existing Automata? (y/n) ")
+    if input == "y" or input == "Y" or input == "n" or input == "N":
+        success = True
     else:
-        print("string not accepted.")
+        print("wrong input.")
+
+if input == "y" or input == "Y":
+    files = os.listdir("configs")
+    for f in files:
+        print(f)
+    file = raw_input("Select one (without expansion) ")
+    automata = load_automata(file)
+
+else:
+    automata = make_automata()
+
+accept_test(automata)
