@@ -12,7 +12,7 @@ class Automata:
         self.states = {}
         self.voca = []
         self.init_state = None
-        self.final_states = {}
+        self.final_states = []
         
     def get_name(self):
         return self.name
@@ -24,9 +24,10 @@ class Automata:
     def add_state(self, state_name):
         state = self.State(state_name)
         self.states[state_name] = state
+        return state
 
     def add_final_state(self, state):
-        self.final_states[state.get_name()] = state
+        self.final_states.append(state)
 
     def set_init_state(self, state):
         self.init_state = state
@@ -35,7 +36,7 @@ class Automata:
         return self.init_state
 
     def get_final_states(self):
-        return self.final_states.values()
+        return self.final_states
 
     # get State object by state name
     def get_state(self, state_name):
@@ -62,8 +63,9 @@ class Automata:
         print(self.init_state)
 
     def show_final_states(self):
-        for state in self.final_states.values():
-            print(state.get_name())
+        for state in self.final_states:
+            print(state.get_name(), end=' ')
+        print("")
 
 
     # check if input string is acceptable.
@@ -73,11 +75,10 @@ class Automata:
         for symbol in input_string:
             cur_state = cur_state.trans(symbol)
 
-        if cur_state.get_name() in self.final_states:
+        if cur_state in self.final_states:
             return True
         else:
             return False
-
 
 
     class State:
@@ -127,20 +128,25 @@ def save_automata(automata):
 
     root = ET.Element("automata")
 
+    # automata name
     automata_name = ET.SubElement(root, "name")
     automata_name.text = automata.get_name()
 
+    # vocabulary
     voca = ET.SubElement(root, "voca")
     for symbol in automata.get_voca():
         ET.SubElement(voca, "symbol").text = symbol
 
+    # initial state
     init_state = ET.SubElement(root, "init_state")
     init_state.text = automata.get_init_state().get_name()
 
+    # final states
     final_states = ET.SubElement(root, "final_states")
     for state in automata.get_final_states():
         ET.SubElement(final_states, "state").text = state.get_name()
 
+    # states
     states = ET.SubElement(root, "states")
     for state in automata.get_all_states():
         s = ET.SubElement(states, "state")
@@ -158,6 +164,48 @@ def save_automata(automata):
     ET.dump(root)
 
     ET.ElementTree(root).write(filename)
+
+# load automata from xml file
+def load_automata(file):
+    dir = "configs/"
+
+    tree = ET.parse(dir + file + ".xml")
+    root = tree.getroot()
+
+    automata = Automata(root.find("name").text)
+
+    voca = root.find("voca")
+    voca_list = []
+    for symbol in voca.getchildren():
+        voca_list.append(symbol.text)
+    automata.set_voca(voca_list)
+
+    states = root.find("states")
+    for state in states.iter("state"):
+        automata.add_state(state.find("name").text)
+
+    for state in states.iter("state"):
+        s = automata.get_state(state.find("name").text)
+        trans_func = state.find("trans_func")
+        for func in trans_func.iter("func"):
+            input = func.find("input").text
+            next = func.find("next").text
+            next = automata.get_state(next)
+            s.set_trans_func(input, next)
+
+    init_state = root.find("init_state").text
+    automata.set_init_state(automata.get_state(init_state))
+
+    final_states = root.find("final_states")
+    for state in final_states.iter("state"):
+        final_state = state.text
+        automata.add_final_state(automata.get_state(final_state))
+
+
+    return automata
+
+
+
 
 def make_dfa():
 
@@ -206,15 +254,37 @@ def make_dfa():
 
     save_automata(automata)
 
+    automata_temp = load_automata("hw1")
+    print(automata_temp.get_name())
+
     while True:
 
         input_string = raw_input("input string? ")
 
 
-        if automata.is_acceptable(input_string):
+        if automata_temp.is_acceptable(input_string):
             print("string accepted.")
         else:
             print("string not accepted.")
 
 
-make_dfa()
+#make_dfa()
+
+automata_temp = load_automata("hw1")
+print(automata_temp.get_name())
+print(automata_temp.get_init_state().get_name())
+
+automata_temp.show_voca()
+automata_temp.show_all_states()
+automata_temp.show_final_states()
+automata_temp.show_init_state()
+
+while True:
+
+    input_string = raw_input("input string? ")
+
+
+    if automata_temp.is_acceptable(input_string):
+        print("string accepted.")
+    else:
+        print("string not accepted.")
