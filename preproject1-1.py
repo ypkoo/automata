@@ -270,12 +270,15 @@ Welcome to Automata world!
 
 success = False
 
-while not success:
-    input = raw_input("Do you want to load existing Automata? (y/n) ")
-    if input == "y" or input == "Y" or input == "n" or input == "N":
-        success = True
-    else:
-        print("wrong input.")
+if os.path.exists("configs/"):
+    while not success:
+        input = raw_input("Do you want to load existing Automata? (y/n) ")
+        if input == "y" or input == "Y" or input == "n" or input == "N":
+            success = True
+        else:
+            print("wrong input.")
+else:
+    input = "n"
 
 if input == "y" or input == "Y":
     files = os.listdir("configs")
@@ -283,7 +286,6 @@ if input == "y" or input == "Y":
         print(f)
     file = raw_input("Select one (without expansion) ")
     automata = load_automata(file)
-
 else:
     automata = make_automata()
 
