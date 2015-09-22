@@ -32,7 +32,11 @@ class Automata:
         return self.init_state
 
     def get_state(self, state_name):
-        return self.states[state_name]
+        #assert state_name in self.states.keys()
+        if state_name in self.states.keys():
+            return self.states[state_name]
+        else:
+            False
 
     def get_states(self):
         return self.states.values()
@@ -49,7 +53,7 @@ class Automata:
 
 
     # check if input string is acceptable.
-    def accept(self, input_string):
+    def is_acceptable(self, input_string):
         cur_state = self.init_state
 
         for symbol in input_string:
@@ -98,7 +102,7 @@ def make_dfa():
     state_num = input("How many states? ")
 
     for i in range(state_num):
-        automata.set_state("q_%d" % i)
+        automata.set_state("q%d" % i)
 
     states = automata.get_states()
     voca = automata.get_voca()
@@ -107,8 +111,13 @@ def make_dfa():
 
     for state in states:
         for input_symbol in voca:
-            next = raw_input("delta(%s, %s)" % (state.get_name(), input_symbol))
-            state.set_trans_func(input_symbol, automata.get_state(next))
+            success = False
+            while not success:
+                next = raw_input("delta(%s, %s) -> " % (state.get_name(), input_symbol))
+                success = state.set_trans_func(input_symbol, automata.get_state(next))
+                if not success:
+                    print("State doesn't exist. Please try again.")
+
 
     init_state = raw_input("initial state? ")
     final_state = raw_input("final state? ")
@@ -122,10 +131,10 @@ def make_dfa():
     input_string = raw_input("input string? ")
 
 
-    if automata.accept(input_string):
-        print("string accepted")
+    if automata.is_acceptable(input_string):
+        print("string accepted.")
     else:
-        print("string not accepted")
+        print("string not accepted.")
 
 
 
