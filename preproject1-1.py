@@ -71,36 +71,38 @@ class Automata:
     # check if input string is acceptable.
     def is_acceptable(self, input_string):
         cur_state = self.init_state
+        try:
+            for symbol in input_string:
+                cur_state = cur_state.trans(symbol)
 
-        for symbol in input_string:
-            cur_state = cur_state.trans(symbol)
-
-        if cur_state in self.final_states:
-            return True
-        else:
-            return False
+            if cur_state in self.final_states:
+                return True
+            else:
+                return False
+        except:
+            print("Input string has wrong symbols. Please try again.")
 
 
     class State:
         def __init__(self, name):
             self.name = name
-            self.trans_func = []
+            self.trans_func = {}
 
         def get_name(self):
             return self.name
 
         def set_trans_func(self, input, next):
             # add check input and next have proper type.
-            self.trans_func.append([input, next])
+            self.trans_func[input] = next
 
         def get_trans_func(self):
             return self.trans_func
 
         def trans(self, input):
-            for func in self.trans_func:
-                if func[0] == input:
-                    return func[1]
-            return None
+            if input in self.trans_func.keys():
+                return self.trans_func[input]
+            else:
+                return False
 
 # indent function for formatting xml. (from https://wikidocs.net/42)
 def indent(elem, level=0):
