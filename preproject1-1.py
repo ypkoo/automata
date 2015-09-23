@@ -157,10 +157,10 @@ def save_automata(automata):
         trans_func = ET.SubElement(s, "trans_func")
 
         tf = state.get_trans_func()
-        for pair in tf:
+        for input in tf:
             func = ET.SubElement(trans_func, "func")
-            ET.SubElement(func, "input").text = pair[0]
-            ET.SubElement(func, "next").text = pair[1].get_name()
+            ET.SubElement(func, "input").text = input
+            ET.SubElement(func, "next").text = tf[input].get_name()
 
     indent(root)
 
@@ -213,21 +213,28 @@ def make_automata():
     automata = Automata(dfa_name)
 
     voca = raw_input("vocabulary? (seperated by space) ")
-    voca = voca.split()
+    voca = list(set(voca.split()))
 
     automata.set_voca(voca)
 
-    state_num = raw_input("How many states? ")
+    print("Vocabulary (duplicates are removed.)")
+    automata.show_voca()
 
-    for i in range(int(state_num)):
+    state_num = int(raw_input("How many states? "))
+
+    for i in range(state_num):
         automata.add_state("q%d" % i)
+
+    print("%d states are created." % state_num)
+    automata.show_all_states()
+    print()
 
     states = automata.get_all_states()
     voca = automata.get_voca()
 
     print("setting state transition function...\n")
 
-    for state in sorted(states):
+    for state in states:
         for input_symbol in voca:
             next = False
             while not next:
@@ -247,11 +254,22 @@ def make_automata():
     for state in final_states:
         automata.add_final_state(automata.get_state(state))
 
-    save_automata(automata)
+    success = False
+    while not success:
+        save = raw_input("Do you want to save current automata? (y/n)")
+        if save == "y" or input == "Y" or input == "n" or input == "N":
+            success = True
+        else:
+            print("wrong input.")
+
+    if save == "y" or input == "Y":
+        save_automata(automata)
+        print("Current automata is saved as congif/%s.xml" % automata.get_name())
 
     return automata
 
 def accept_test(automata):
+    print("Acceptance test of automata %s" % automata.get_name())
     while True:
         input_string = raw_input("input string? ")
 
