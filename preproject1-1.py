@@ -67,7 +67,6 @@ class Automata:
             print(state.get_name(), end=' ')
         print("")
 
-
     # check if input string is acceptable.
     def is_acceptable(self, input_string):
         cur_state = self.init_state
@@ -81,7 +80,6 @@ class Automata:
                 return False
         except:
             print("Input string has wrong symbols. Please try again.")
-
 
     class State:
         def __init__(self, name):
@@ -103,6 +101,7 @@ class Automata:
                 return self.trans_func[input]
             else:
                 return False
+
 
 # indent function for formatting xml. (from https://wikidocs.net/42)
 def indent(elem, level=0):
@@ -225,25 +224,37 @@ def make_automata():
     for i in range(state_num):
         automata.add_state("q%d" % i)
 
-    print("%d states are created." % state_num)
+    dead_state = automata.add_state("dead_state")
+
+    print("%d states are created. (including dead state)" % (state_num+1))
     automata.show_all_states()
     print()
 
     states = automata.get_all_states()
     voca = automata.get_voca()
 
-    print("setting state transition function...\n")
+    print("setting state transition function...")
+    print("If you don't want to specify transition, enter 'None' (for allowing partial function)\n")
 
     for state in states:
-        for input_symbol in voca:
-            next = False
-            while not next:
-                next = raw_input("delta(%s, %s) -> " % (state.get_name(), input_symbol))
-                next = automata.get_state(next)
-                if next:
-                    success = state.set_trans_func(input_symbol, next)
-                else:
-                    print("State doesn't exist. Please try again.")
+        if not state is dead_state:
+            for input_symbol in voca:
+                success = False
+                while not success:
+                    next = raw_input("delta(%s, %s) -> " % (state.get_name(), input_symbol))
+                    if next == "None": # daed state
+                        next_state = automata.get_state("dead_state")
+                    else:
+                        next_state = automata.get_state(next)
+
+                    if next_state:
+                        state.set_trans_func(input_symbol, next_state)
+                        success = True
+                    else:
+                        print("State doesn't exist. Please try again.")
+        else:
+            for input_symbol in voca:
+                dead_state.set_trans_func(input_symbol, dead_state)
 
 
     init_state = raw_input("initial state? ")
@@ -264,7 +275,7 @@ def make_automata():
 
     if save == "y" or input == "Y":
         save_automata(automata)
-        print("Current automata is saved as congif/%s.xml" % automata.get_name())
+        print("Current automata is saved as configs/%s.xml" % automata.get_name())
 
     return automata
 
@@ -281,32 +292,35 @@ def accept_test(automata):
 
 
 
-
-print ("""
+def main():
+    print ("""
 2015 Fall CS322 project. Developed by YP Koo.
 
 Welcome to Automata world!
 """)
 
-success = False
+    success = False
 
-if os.path.exists("configs/"):
-    while not success:
-        input = raw_input("Do you want to load existing Automata? (y/n) ")
-        if input == "y" or input == "Y" or input == "n" or input == "N":
-            success = True
-        else:
-            print("wrong input.")
-else:
-    input = "n"
+    if os.path.exists("configs/"):
+        while not success:
+            input = raw_input("Do you want to load existing Automata? (y/n) ")
+            if input == "y" or input == "Y" or input == "n" or input == "N":
+                success = True
+            else:
+                print("wrong input.")
+    else:
+        input = "n"
 
-if input == "y" or input == "Y":
-    files = os.listdir("configs")
-    for f in files:
-        print(f)
-    file = raw_input("Select one (without expansion) ")
-    automata = load_automata(file)
-else:
-    automata = make_automata()
+    if input == "y" or input == "Y":
+        files = os.listdir("configs")
+        for f in files:
+            print(f)
+        file = raw_input("Select one (without expansion) ")
+        automata = load_automata(file)
+    else:
+        automata = make_automata()
 
-accept_test(automata)
+    accept_test(automata)
+
+
+main()
