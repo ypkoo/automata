@@ -268,7 +268,7 @@ def make_automata():
     success = False
     while not success:
         save = raw_input("Do you want to save current automata? (y/n)")
-        if save == "y" or input == "Y" or input == "n" or input == "N":
+        if save == "y" or save == "Y" or save == "n" or save == "N":
             success = True
         else:
             print("wrong input.")
