@@ -102,6 +102,46 @@ class Automata:
             else:
                 return False
 
+class Mealy(Automata):
+
+    def __init__(self, name):
+        self.name = name
+        self.states = {}
+        self.voca = []
+        self.init_state = None
+        self.final_states = []
+        self.outputs = []
+
+    def set_outputs(self, outputs):
+        self.outputs = outputs
+
+    def get_outputs(self):
+        return self.outputs
+
+    def show_outputs(self):
+        print(self.outputs)
+
+    def print_output(self, input_string):
+        cur_state = self.init_state
+        output = ""
+
+        for symbol in input_string:
+            output = output + cur_state.output(symbol)
+            cur_state = cur_state.trans(symbol)
+
+        print(output)
+
+    class State(Automata.State):
+        def __init__(self, name):
+            self.name = name
+            self.trans_func = {}
+            self.output_func = {}
+
+        def set_output_func(self, input, output):
+            self.output_func[input] = output
+
+        def output(self, input):
+            return self.output_func[input]
 
 # indent function for formatting xml. (from https://wikidocs.net/42)
 def indent(elem, level=0):
@@ -120,36 +160,39 @@ def indent(elem, level=0):
             elem.tail = i
 
 # save current automata to use later
-def save_automata(automata):
+def save_mealy(mealy):
     dir = "configs/"
-    filename = dir + automata.get_name() + ".xml"
+    filename = dir + mealy.get_name() + ".xml"
 
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-    root = ET.Element("automata")
+    root = ET.Element("mealy")
 
     # automata name
-    automata_name = ET.SubElement(root, "name")
-    automata_name.text = automata.get_name()
+    mealy_name = ET.SubElement(root, "name")
+    mealy_name.text = mealy.get_name()
 
     # vocabulary
     voca = ET.SubElement(root, "voca")
-    for symbol in automata.get_voca():
+    for symbol in mealy.get_voca():
         ET.SubElement(voca, "symbol").text = symbol
+
+    # output
+    #### to be implemented ###
 
     # initial state
     init_state = ET.SubElement(root, "init_state")
-    init_state.text = automata.get_init_state().get_name()
+    init_state.text = mealy.get_init_state().get_name()
 
     # final states
     final_states = ET.SubElement(root, "final_states")
-    for state in automata.get_final_states():
+    for state in mealy.get_final_states():
         ET.SubElement(final_states, "state").text = state.get_name()
 
     # states
     states = ET.SubElement(root, "states")
-    for state in automata.get_all_states():
+    for state in mealy.get_all_states():
         s = ET.SubElement(states, "state")
         ET.SubElement(s, "name").text = state.get_name()
 
@@ -166,7 +209,7 @@ def save_automata(automata):
     ET.ElementTree(root).write(filename)
 
 # load automata from xml file
-def load_automata(file):
+def load_mealy(file):
     dir = "configs/"
 
     tree = ET.parse(dir + file + ".xml")
@@ -205,33 +248,40 @@ def load_automata(file):
     return automata
 
 # make and save a new automata
-def make_automata():
-    print("Make a new automata.\n")
-    dfa_name = raw_input("DFA name? ")
+def make_mealy():
+    print("Make a new mealy machine.\n")
+    mealy_name = raw_input("Mealy machine name? ")
 
-    automata = Automata(dfa_name)
+    mealy = Mealy(mealy_name)
 
-    voca = raw_input("vocabulary? (seperated by space) ")
+    voca = raw_input("Vocabulary? (seperated by space) ")
     voca = list(set(voca.split()))
 
-    automata.set_voca(voca)
+    mealy.set_voca(voca)
 
     print("Vocabulary (duplicates are removed.)")
-    automata.show_voca()
+    mealy.show_voca()
+
+    outputs = raw_input("Outputs? (seperated by space) ")
+    output = list(set(outputs.split()))
+
+    mealy.set_outputs(outputs)
+    print("Outputs (duplicates are removed.)")
+    mealy.show_outputs()
 
     state_num = int(raw_input("How many states? "))
 
     for i in range(state_num):
-        automata.add_state("q%d" % i)
+        mealy.add_state("q%d" % i)
 
-    dead_state = automata.add_state("dead_state")
+    dead_state = mealy.add_state("dead_state")
 
     print("%d states are created. (including dead state)" % (state_num+1))
-    automata.show_all_states()
+    mealy.show_all_states()
     print()
 
-    states = automata.get_all_states()
-    voca = automata.get_voca()
+    states = mealy.get_all_states()
+    voca = mealy.get_voca()
 
     print("setting state transition function...")
     print("If you don't want to specify transition, enter 'None' (for allowing partial function)\n")
@@ -243,9 +293,9 @@ def make_automata():
                 while not success:
                     next = raw_input("delta(%s, %s) -> " % (state.get_name(), input_symbol))
                     if next == "None": # daed state
-                        next_state = automata.get_state("dead_state")
+                        next_state = mealy.get_state("dead_state")
                     else:
-                        next_state = automata.get_state(next)
+                        next_state = mealy.get_state(next)
 
                     if next_state:
                         state.set_trans_func(input_symbol, next_state)
@@ -256,28 +306,39 @@ def make_automata():
             for input_symbol in voca:
                 dead_state.set_trans_func(input_symbol, dead_state)
 
+    print("setting state transition function...")
+    print("Available outputs:", end=' ')
+    mealy.show_outputs()
+
+    for state in states:
+        if not state is dead_state:
+            for input_symbol in voca:
+                output = raw_input("lambda(%s, %s) -> " % (state.get_name(), input_symbol))
+                state.set_output_func(input_symbol, output)
 
     init_state = raw_input("initial state? ")
     final_states = raw_input("final states? (seperated by space) ")
     final_states = final_states.split()
 
-    automata.set_init_state(automata.get_state(init_state))
+    mealy.set_init_state(mealy.get_state(init_state))
     for state in final_states:
-        automata.add_final_state(automata.get_state(state))
+        mealy.add_final_state(mealy.get_state(state))
 
+    """
     success = False
     while not success:
-        save = raw_input("Do you want to save current automata? (y/n)")
+        save = raw_input("Do you want to save current mealy machine? (y/n)")
         if save == "y" or save == "Y" or save == "n" or save == "N":
             success = True
         else:
             print("wrong input.")
 
     if save == "y" or save == "Y":
-        save_automata(automata)
-        print("Current automata is saved as configs/%s.xml" % automata.get_name())
+        save_mealy(mealy)
+        print("Current mealy machine is saved as configs/%s.xml" % mealy.get_name())
+    """
 
-    return automata
+    return mealy
 
 def accept_test(automata):
     print("Acceptance test of automata %s" % automata.get_name())
@@ -289,7 +350,16 @@ def accept_test(automata):
         else:
             print("string not accepted.")
 
+def mealy_test(mealy):
+    print("Mealy machine test of %s" % mealy.get_name())
+    while True:
+        input_string = raw_input("input string? ")
 
+        if mealy.is_acceptable(input_string):
+            print("output:", end=' ')
+            mealy.print_output(input_string)
+        else:
+            print("String not accepted. Please try again.")
 
 
 def main():
@@ -299,6 +369,7 @@ def main():
 Welcome to Automata world!
 """)
 
+    """
     success = False
 
     if os.path.exists("configs/"):
@@ -319,8 +390,10 @@ Welcome to Automata world!
         automata = load_automata(file)
     else:
         automata = make_automata()
+    """
 
-    accept_test(automata)
+    mealy = make_mealy()
+    mealy_test(mealy)
 
 
 main()
