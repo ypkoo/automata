@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python preproject1-1.py
+python preproject1-2.py

@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 
 __author__ = 'koo'
 
+# Automata class
 class Automata:
     def __init__(self, name):
         self.name = name
@@ -102,6 +103,7 @@ class Automata:
             else:
                 return False
 
+# Mealy machine class
 class Mealy(Automata):
 
     def __init__(self, name):
