@@ -29,11 +29,17 @@ class HangulAutomata(Mealy):
 def construct_hangul_automata():
 
     vocabulary = [
+        # consonants
         'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ',
         'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ', 'ㄲ', 'ㄸ',
         'ㅃ', 'ㅆ', 'ㅉ',
+
+        # vowels
         'ㅏ', 'ㅑ', 'ㅓ', 'ㅕ', 'ㅗ', 'ㅛ', 'ㅜ', 'ㅠ',
         'ㅡ', 'ㅣ', 'ㅐ', 'ㅒ', 'ㅔ', 'ㅖ',
+
+        # delete
+        '-',
     ]
 
     consonants = [
@@ -64,6 +70,7 @@ def construct_hangul_automata():
 
     # set initial state and final states
     hangul.set_init_state(init_state)
+    hangul.add_final_state(init_state)
     hangul.add_final_state(o)
     hangul.add_final_state(u)
     hangul.add_final_state(a)
@@ -165,18 +172,31 @@ def construct_hangul_automata():
     # set transition function of l
     for c in consonants:
         l.set_trans_func(c, v)
+
+    # set transition function of input '-'
+    for state in hangul.get_all_states():
+        state.set_trans_func('-', init_state)
     ### setting transition function over ###
 
 
     ### start setting output function ###
     # set output function of initial state
     def output_init_state(prev_str, input):
-        return input
+        if input == '-':
+            if len(prev_str) == 0:
+                return ''
+            elif len(prev_str) > 0:
+                return prev_str[0:-1]
+        else:
+            return prev_str + input
 
     init_state.output = output_init_state
 
     # set output function of state v
     def output_v(prev_str, input):
+        if input == '-':
+            return prev_str[0:-1]
+
         if len(prev_str) is 1:
             last_char = prev_str
         elif len(prev_str) > 1:
@@ -196,6 +216,9 @@ def construct_hangul_automata():
 
     # set output function of state o
     def output_o(prev_str, input):
+        if input == '-':
+            return prev_str[0:-1]
+
         last_char = prev_str[-1]
         cho, jung, jong = get_allsung(last_char)
 
@@ -214,6 +237,9 @@ def construct_hangul_automata():
 
     # set output function of state u
     def output_u(prev_str, input):
+        if input == '-':
+            return prev_str[0:-1]
+
         last_char = prev_str[-1]
         cho, jung, jong = get_allsung(last_char)
 
@@ -232,6 +258,9 @@ def construct_hangul_automata():
 
     # set output function of a
     def output_a(prev_str, input):
+        if input == '-':
+            return prev_str[0:-1]
+
         last_char = prev_str[-1]
         cho, jung, jong = get_allsung(last_char)
 
@@ -259,6 +288,9 @@ def construct_hangul_automata():
 
     # set output function of i
     def output_i(prev_str, input):
+        if input == '-':
+            return prev_str[0:-1]
+
         last_char = prev_str[-1]
         cho, jung, jong = get_allsung(last_char)
 
@@ -271,6 +303,9 @@ def construct_hangul_automata():
 
     # set output function of k
     def output_k(prev_str, input):
+        if input == '-':
+            return prev_str[0:-1]
+
         last_char = prev_str[-1]
         cho, jung, jong = get_allsung(last_char)
 
@@ -286,6 +321,9 @@ def construct_hangul_automata():
 
     # set output function of n
     def output_n(prev_str, input):
+        if input == '-':
+            return prev_str[0:-1]
+
         last_char = prev_str[-1]
         cho, jung, jong = get_allsung(last_char)
 
@@ -301,6 +339,9 @@ def construct_hangul_automata():
 
     # set output function of r
     def output_r(prev_str, input):
+        if input == '-':
+            return prev_str[0:-1]
+
         last_char = prev_str[-1]
         cho, jung, jong = get_allsung(last_char)
 
@@ -316,6 +357,9 @@ def construct_hangul_automata():
 
     # set output function of l
     def output_l(prev_str, input):
+        if input == '-':
+            return prev_str[0:-1]
+
         last_char = prev_str[-1]
         cho, jung, jong = get_allsung(last_char)
 
