@@ -107,11 +107,11 @@ def make_e_nfa():
                 while not success:
                     next = raw_input("delta(%s, %s) -> " % (state.get_name(), input_symbol))
                     if next == "None": # daed state
-                        next_states = [enfa.get_state("dead_state")]
-                        success = True
                         if input_symbol == "epsilon":
-                            if state not in next_states:
-                                next_states.append(state)
+                            next_states = []
+                        else:
+                            next_states = [enfa.get_state("dead_state")]
+                        success = True
                     else:
                         next_states = []
                         for state_ in next.split():
@@ -121,9 +121,9 @@ def make_e_nfa():
                                 next_states = False
                                 break
 
-                        if input_symbol == "epsilon":
-                            if state not in next_states:
-                                next_states.append(state)
+                    if input_symbol == "epsilon":
+                        if state not in next_states:
+                            next_states.append(state)
 
 
                     if next_states:
