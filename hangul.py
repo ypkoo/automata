@@ -31,17 +31,14 @@ DOUBLE_JONG_LIST = [
 ]
 
 def get_chosung(input):
-    #input = input.decode('utf-8')
     index = (ord(input) - BASE) / CHOSUNG
     return CHOSUNG_LIST[index]
 
 def get_jungsung(input):
-    #input = input.decode('utf-8')
     index = ((ord(input) - BASE) % CHOSUNG) / JUNGSUNG
     return JUNGSUNG_LIST[index]
 
 def get_jongsung(input):
-    #input = input.decode('utf-8')
     index = ((ord(input) - BASE) % CHOSUNG) % JUNGSUNG
     return JONGSUNG_LIST[index]
 

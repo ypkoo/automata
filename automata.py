@@ -53,9 +53,11 @@ class Automata:
         return self.voca
 
     def show_all_states(self):
+        all = []
         for state in sorted(self.states.values()):
-            print(state.get_name(), end=' ')
-        print("")
+            if state != self.get_state("dead_state"):
+                all.append(state.get_name())
+        print(all)
 
     def show_voca(self):
         print(self.voca)
@@ -64,9 +66,10 @@ class Automata:
         print(self.init_state)
 
     def show_final_states(self):
+        all = []
         for state in self.final_states:
-            print(state.get_name(), end=' ')
-        print("")
+            all.append(state.get_name())
+        print(all)
 
     # check if input string is acceptable.
     def is_acceptable(self, input_string):
@@ -81,6 +84,23 @@ class Automata:
                 return False
         except:
             print("Input string has wrong symbols. Please try again.")
+
+    def info(self):
+        print("### information of DFA %s" % self.get_name())
+        print("States : ", end=' ')
+        self.show_all_states()
+        print("Vocabulary :", end=' ')
+        print(self.get_voca())
+        print("State Transition Function : ")
+
+        for state in self.get_all_states():
+            if state != self.get_state("dead_state"):
+                for symbol in self.get_voca():
+                    print("(%s, %s) => %s" % (state.get_name(), symbol, state.trans(symbol).get_name()))
+
+        print("Initial State : %s" % self.get_init_state().get_name())
+        print("Final State :", end=' ')
+        self.show_final_states()
 
     class State:
         def __init__(self, name):
@@ -227,7 +247,7 @@ def make_automata():
 
     dead_state = automata.add_state("dead_state")
 
-    print("%d states are created. (including dead state)" % (state_num+1))
+    print("%d states are created. " % (state_num))
     automata.show_all_states()
     print()
 
