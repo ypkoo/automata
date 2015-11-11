@@ -105,13 +105,132 @@ class Converter:
         return automata
 
 class Minimizer:
-    def minimize(self, dfa):
-        pass
+    def init_table(self, dfa):
+        table = {}
+        for state1 in dfa.get_all_states():
+            if state1 != dfa.get_state("dead_state"):
+                table[state1.get_name()] = {}
+                for state2 in dfa.get_all_states():
+                    if state2 != dfa.get_state("dead_state"):
+                        table[state1.get_name()][state2.get_name()] = False
+        return table
 
+    def is_distinct(self, dfa, table, state1, state2):
+        if state1 in dfa.get_final_states() and state2 not in dfa.get_final_states():
+            return True
+        if state2 in dfa.get_final_states() and state1 not in dfa.get_final_states():
+            return True
+        for symbol in dfa.get_voca():
+            next1 = state1.trans(symbol)
+            next2 = state2.trans(symbol)
+            if next1.get_name() == "dead_state" and next2 in dfa.get_final_states():
+                return True
+            if next2.get_name() == "dead_state" and next1 in dfa.get_final_states():
+                return True
+            if next1.get_name() == "dead_state" and next2.get_name() == "dead_state":
+                continue
+            if table[next1.get_name()][next2.get_name()] or table[next2.get_name()][next1.get_name()]:
+                return True
+        return False
+
+    def construct_table(self, dfa):
+        table = self.init_table(dfa)
+        while True:
+            table_old = table
+            for i in range(2):
+                for state1 in dfa.get_all_states():
+                    if state1 != dfa.get_state("dead_state"):
+                        for state2 in dfa.get_all_states():
+                            if state2 != dfa.get_state("dead_state"):
+                                name1 = state1.get_name()
+                                name2 = state2.get_name()
+                                if table[name1][name2] == False or table[name2][name1] == False:
+                                    table[name1][name2] = self.is_distinct(dfa, table, state1, state2)
+                                    table[name2][name1] = self.is_distinct(dfa, table, state1, state2)
+            if table == table_old:
+                break
+        return table
+
+    def minimize(self, dfa):
+        table = self.construct_table(dfa)
+        not_distinct_sets = []
+
+        for key1 in table.keys():
+            for key2 in table[key1].keys():
+                if not table[key1][key2]:
+                    if key1 != key2:
+                        inserted = False
+                        not_distinct_set = set([key1, key2])
+                        for s in not_distinct_sets:
+                            if s & not_distinct_set:
+                                s = s | not_distinct_set
+                                inserted = True
+                        if not inserted:
+                            not_distinct_sets.append(not_distinct_set)
+
+        m_dfa = Automata("m_dfa")
+
+        m_dfa.set_voca(dfa.get_voca())
+
+        for state in dfa.get_all_states():
+            is_in = False
+            for s in not_distinct_sets:
+                if state.get_name() in s:
+                    is_in = True
+            if not is_in:
+                m_dfa.add_state(state.get_name())
+
+        new_states = []
+        new_mapping = {}
+        for s in not_distinct_sets:
+            new_state = ""
+            for s_ in s:
+                new_state = new_state + " " + s_
+            new_states.append(" ".join(set(new_state.split())))
+            new_mapping[" ".join(set(new_state.split()))] = s
+
+        for new_state in new_states:
+            m_dfa.add_state(new_state)
+
+        for state in m_dfa.get_all_states():
+            for symbol in m_dfa.get_voca():
+                if state.get_name() not in new_states:
+                    next = dfa.get_state(state.get_name()).trans(symbol)
+                else:
+                    cur_state = list(new_mapping[state.get_name()])[0]
+                    next = dfa.get_state(cur_state).trans(symbol)
+
+                for key in new_mapping.keys():
+                    if next in new_mapping[key]:
+                        next = m_dfa.get_state(key)
+                        break
+                state.set_trans_func(symbol, next)
+
+        initial_state_name = dfa.get_init_state().get_name()
+        initial_state = dfa.get_init_state()
+        for key in new_mapping.keys():
+            if initial_state_name in new_mapping[key]:
+                initial_state = m_dfa.get_state(key)
+                break
+        m_dfa.set_init_state(initial_state)
+
+        final_states = dfa.get_final_states()
+        for state in final_states:
+            final_state = state
+            for key in new_mapping.keys():
+                if state.get_name() in new_mapping[key]:
+                    final_state = m_dfa.get_state(key)
+                    break
+            m_dfa.add_final_state(final_state)
+
+        return m_dfa
 
 if __name__ == "__main__":
-    enfa = make_sample2()
+    enfa = make_e_nfa()
     con = Converter()
+    min = Minimizer()
     dfa = con.convert(enfa)
     dfa.info()
-    accept_test(dfa)
+    m_dfa = min.minimize(dfa)
+    m_dfa.info()
+    accept_test(m_dfa)

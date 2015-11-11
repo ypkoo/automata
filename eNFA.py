@@ -82,14 +82,14 @@ def make_e_nfa():
     print("Vocabulary (duplicates are removed and epsilon for e-move is included.)")
     enfa.show_voca()
 
-    state_num = int(raw_input("How many states? "))
+    names = raw_input("Enter state names. (seperated by space) ")
 
-    for i in range(state_num):
-        enfa.add_state("q%d" % i)
+    for name in names.split():
+        enfa.add_state(name)
 
     dead_state = enfa.add_state("dead_state")
 
-    print("%d states are created. (including dead state)" % (state_num+1))
+    print("%d states are created. (including dead state)" % (len(names.split()) + 1))
     enfa.show_all_states()
     print()
 
@@ -220,21 +220,21 @@ def make_sample2():
     enfa.set_voca(['a', 'b', 'epsilon'])
 
     for i in range(11):
-        enfa.add_state("q%d" % i)
+        enfa.add_state("%d" % i)
     enfa.add_state("dead_state")
 
     dead_state = enfa.get_state("dead_state")
-    q0 = enfa.get_state("q0")
-    q1 = enfa.get_state("q1")
-    q2 = enfa.get_state("q2")
-    q3 = enfa.get_state("q3")
-    q4 = enfa.get_state("q4")
-    q5 = enfa.get_state("q5")
-    q6 = enfa.get_state("q6")
-    q7 = enfa.get_state("q7")
-    q8 = enfa.get_state("q8")
-    q9 = enfa.get_state("q9")
-    q10 = enfa.get_state("q10")
+    q0 = enfa.get_state("0")
+    q1 = enfa.get_state("1")
+    q2 = enfa.get_state("2")
+    q3 = enfa.get_state("3")
+    q4 = enfa.get_state("4")
+    q5 = enfa.get_state("5")
+    q6 = enfa.get_state("6")
+    q7 = enfa.get_state("7")
+    q8 = enfa.get_state("8")
+    q9 = enfa.get_state("9")
+    q10 = enfa.get_state("10")
 
     q0.set_trans_func('a', [dead_state])
     q0.set_trans_func('b', [dead_state])
@@ -262,7 +262,7 @@ def make_sample2():
 
     q6.set_trans_func('a', [dead_state])
     q6.set_trans_func('b', [dead_state])
-    q6.set_trans_func('epsilon', [q6, q7])
+    q6.set_trans_func('epsilon', [q1, q6, q7])
 
     q7.set_trans_func('a', [q8])
     q7.set_trans_func('b', [dead_state])
@@ -297,7 +297,6 @@ if __name__ == "__main__":
 Welcome to e-NFA world!
 """)
 
-    # enfa = make_e_nfa()
-    enfa = make_sample1()
+    enfa = make_e_nfa()
     accept_test(enfa)
 
